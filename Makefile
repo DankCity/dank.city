@@ -15,6 +15,19 @@ build:
 		--cache-from $(DOCKER_REPO):latest \
 		-t $(DOCKER_REPO):local .
 
+.PHONY: run
+run:
+	docker run --rm -it \
+		-p 8000:8000 \
+		--network host\
+		$(DOCKER_REPO):local
+
+.PHONY: shell
+shell:
+	docker run --rm -it \
+		--entrypoint ash \
+		$(DOCKER_REPO):local
+
 .PHONY: test-lint
 test-lint:
 	docker run --rm -it \
