@@ -34,6 +34,10 @@ test-unit:
 test-functional:
 	$(info $@ is not currently implemented)
 
+.PHONY: tag-git-tag
+tag-git-tag:
+	docker tag $(DOCKER_REPO):$(GIT_HASH) $(DOCKER_REPO):$(GIT_TAG)
+
 .PHONY: tag-latest
 tag-latest:
 	docker tag $(DOCKER_REPO):local $(DOCKER_REPO):latest
