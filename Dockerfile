@@ -12,6 +12,8 @@ RUN apk add --no-cache --virtual .build-deps gcc musl-dev && \
 
 COPY tox.ini .
 COPY runserver.sh .
+COPY static static
+COPY templates templates
 COPY app.py .
 
 EXPOSE 8000
