@@ -28,14 +28,7 @@ test-lint:
 
 .PHONY: test-unit
 test-unit:
-	docker run --rm -it \
-		--entrypoint ash \
-		$(DOCKER_REPO):local \
-		-c ' \
-			set -e; \
-			pip install tox; \
-			tox -e unit; \
-		'
+	$(info $@ is not currently implemented)
 
 .PHONY: test-functional
 test-functional:
