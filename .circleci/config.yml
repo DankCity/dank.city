@@ -1,0 +1,155 @@
+# ################################
+#
+# Set Circle CI Reusable Executors
+#
+# ################################
+executors:
+  machine:
+    working_directory: ~/dank.city
+    machine:
+      image: circleci/classic:201808-01
+
+  build:
+    working_directory: ~/dank.city
+    docker:
+      - image: circleci/buildpack-deps:bionic
+
+# ####################
+#
+# CircleCI Job Filters
+#
+# ####################
+build-filters: &build-filters
+  tags:
+    ignore: /.*/
+  branches:
+    only: /.*/
+
+latest-filters: &latest-filters
+  tags:
+    ignore: /.*/
+  branches:
+    only: master
+
+tag-filters: &tag-filters
+  tags:
+    only: /.*/
+  branches:
+    ignore: /.*/
+
+deploy-filters: &deploy-filters
+  tags:
+    only: /.*/
+  branches:
+    ignore: /.*/
+
+# ####################
+#
+# CircleCI steps
+#
+# ####################
+commands:
+  setup:
+    description: Setup the build environment
+    steps:
+      - setup_remote_docker
+      - checkout
+  test:
+    description: Run the given tests
+    parameters:
+      test-type:
+        type: string
+    steps:
+      - run: make docker-login
+      - run: make pull-ci
+      - run: make test-<< parameters.test-type>>
+
+# ####################
+#
+# CircleCI 2.0 Jobs
+#
+# ####################
+version: 2.1
+jobs:
+  build:
+    executor: build
+    steps:
+      - setup
+      - run: make pull-latest
+      - run: make tag-latest-as-local
+      - run: make build
+      - run: make docker-login
+      - run: make push-ci
+
+  lint:
+    executor: build
+    steps:
+      - setup
+      - test:
+          test-type: "lint"
+
+  unit-test:
+    executor: build
+    steps:
+      - setup
+      - run: make docker-login
+      - test:
+          test-type: "unit"
+
+  functional-test:
+    executor: machine
+    steps:
+      - checkout
+      - test:
+          test-type: "functional"
+
+  push-latest:
+    executor: build
+    steps:
+      - setup
+      - run: make docker-login
+      - run: make pull-ci
+      - run: make tag-latest
+      - run: make push-latest
+
+  push-tagged:
+    executor: build
+    steps:
+      - setup
+      - run: make docker-login
+      - run: make pull-ci
+      - run: git fetch --tags
+      - run: make tag-git-tag
+      - run: make push-tagged
+
+# ####################
+#
+# CircleCI Workflow
+#
+# ####################
+workflows:
+  version: 2.1
+  dank.city-workflow:
+    jobs:
+      - build:
+          filters: *build-filters
+      - lint:
+          requires:
+              - build
+          filters: *build-filters
+      - unit-test:
+          requires:
+              - build
+          filters: *build-filters
+      - functional-test:
+          requires:
+              - build
+          filters: *build-filters
+      - push-latest:
+          requires:
+              - lint
+              - unit-test
+              - functional-test
+          filters: *latest-filters
+      - push-tagged:
+          filters: *tag-filters
