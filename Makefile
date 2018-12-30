@@ -1,9 +1,43 @@
 SHELL := /bin/bash
 
+MAKEFILE_PATH := $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
+
+KUBECONFIG := $(MAKEFILE_PATH)/kube/dank.city.config
+
 DOCKER_REPO := dankcity/dank.city
 DOCKER_REPO_CI := dankcity/dank.city-ci
 GIT_HASH = $(shell git rev-parse --short=7 HEAD)
 GIT_TAG = $(shell git describe --tags --exact-match $(GIT_HASH) 2>/dev/null)
+
+.PHONY: $(KUBECONFIG)
+$(KUBECONFIG):
+ifneq ("$(KUBECONFIG_PASSPHRASE)","")
+	gpg \
+		--pinentry-mode=loopback \
+		--passphrase $(KUBECONFIG_PASSPHRASE) \
+		--output $@ \
+		-d $@.gpg
+else
+	$(error KUBECONFIG_PASSPHRASE not set)
+endif
+
+.PHONY: $(KUBECONFIG).gpg
+$(KUBECONFIG).gpg:
+ifneq ("$(KUBECONFIG_PASSPHRASE)","")
+	gpg \
+		--pinentry-mode=loopback \
+		--passphrase $(KUBECONFIG_PASSPHRASE) \
+		--output $@ \
+		-c $(patsubst %.gpg,%,$@)
+else
+	$(error KUBECONFIG_PASSPHRASE not set)
+endif
+
+.PHONY: decrypt
+decrypt: $(MAKEFILE_PATH)/kube/dank.city.config
+
+.PHONY: encrypt
+encrypt: $(MAKEFILE_PATH)/kube/dank.city.config.gpg
 
 .PHONY: docker-login
 docker-login:
