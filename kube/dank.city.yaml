@@ -21,7 +21,7 @@ kind: Deployment
 metadata:
   name: dank-city
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: dank-city
@@ -32,4 +32,4 @@ spec:
     spec:
       containers:
         - name: dank-city
-          image: dankcity/dank.city:latest
+          image: dankcity/dank.city:${DOCKER_TAG}
