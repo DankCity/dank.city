@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: dank-city-svc
+  labels:
+    app: dank-city-svc
+spec:
+  type: LoadBalancer
+  ports:
+  - name: http-port
+    protocol: TCP
+    port: 80
+    targetPort: 8000
+  selector:
+    app: dank-city
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dank-city
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: dank-city
+  template:
+    metadata:
+      labels:
+        app: dank-city
+    spec:
+      containers:
+        - name: dank-city
+          image: dankcity/dank.city:latest
