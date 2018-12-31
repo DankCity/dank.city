@@ -31,5 +31,10 @@ spec:
         app: dank-city
     spec:
       containers:
-        - name: dank-city
-          image: ${DEPLOY_REPO}:${DOCKER_TAG}
+      - name: dank-city
+        image: ${DEPLOY_REPO}:${DOCKER_TAG}
+        env:
+        - name: SENTRY_DSN
+          value: ${SENTRY_DSN}
+        - name: SENTRY_ENVIRONMENT
+          value: ${NAMESPACE}

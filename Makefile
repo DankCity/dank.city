@@ -33,7 +33,6 @@ build:
 run:
 	docker run --rm -it \
 		-p 8000:8000 \
-		--network host\
 		$(DOCKER_REPO):local
 
 .PHONY: shell
