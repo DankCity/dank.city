@@ -10,11 +10,7 @@ RUN apk add --no-cache --virtual .build-deps gcc musl-dev && \
     pip install --no-cache-dir --upgrade -r requirements.txt && \
     apk del .build-deps gcc musl-dev
 
-COPY tox.ini .
-COPY runserver.sh .
-COPY static static
-COPY templates templates
-COPY app.py .
+COPY dank.city .
 
 EXPOSE 8000
 
