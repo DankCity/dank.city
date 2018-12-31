@@ -63,6 +63,28 @@ commands:
       - run: make docker-login
       - run: make pull-ci
       - run: make test-<< parameters.test-type>>
+  deploy:
+    description: Deploy to k8s namespace
+    parameters:
+      deploy-env:
+        type: string
+    steps:
+      - checkout
+      - run:
+          name: Install kubectl
+          command: |
+            stable=$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)
+            curl -LO https://storage.googleapis.com/kubernetes-release/release/$stable/bin/linux/amd64/kubectl
+            sudo mv kubectl /usr/local/bin/
+            sudo chmod +x /usr/local/bin/kubectl
+            kubectl version --client=true
+      - run:
+          name: Install envsubst
+          command: |
+            sudo apt install gettext
+            envsubst --version
+      - run: make decrypt
+      - run: make deploy-<< parameters.deploy-env>>
 
 # ####################
 #
@@ -103,6 +125,13 @@ jobs:
       - test:
           test-type: "functional"
 
+  tests-passed:
+    executor: build
+    steps:
+      - run:
+          name: All Tests Passed
+          command: echo "All Tests Passed"
+
   push-latest:
     executor: build
     steps:
@@ -122,6 +151,24 @@ jobs:
       - run: make tag-git-tag
       - run: make push-tagged
 
+  deploy-dev:
+    executor: build
+    steps:
+      - deploy:
+          deploy-env: "dev"
+
+  deploy-staging:
+    executor: build
+    steps:
+      - deploy:
+          deploy-env: "staging"
+
+  deploy-prod:
+    executor: build
+    steps:
+      - deploy:
+          deploy-env: "prod"
+
 # ####################
 #
 # CircleCI Workflow
@@ -131,8 +178,18 @@ workflows:
   version: 2.1
   dank.city-workflow:
     jobs:
+      # ####################
+      #
+      # Build Jobs
+      #
+      # ####################
       - build:
           filters: *build-filters
+      # ####################
+      #
+      # Test Jobs
+      #
+      # ####################
       - lint:
           requires:
               - build
@@ -145,11 +202,37 @@ workflows:
           requires:
               - build
           filters: *build-filters
-      - push-latest:
+      - tests-passed:
           requires:
               - lint
               - unit-test
               - functional-test
+          filters: *build-filters
+      # ####################
+      #
+      # Tagging\Pushing Jobs
+      #
+      # ####################
+      - push-latest:
+          requires:
+              - tests-passed
           filters: *latest-filters
       - push-tagged:
+          filters: *tag-filters
+      # ####################
+      #
+      # Deploy Jobs
+      #
+      # ####################
+      - deploy-dev:
+          requires:
+              - tests-passed
+          filters: *build-filters
+      - deploy-staging:
+          requires:
+              - push-latest
+          filters: *latest-filters
+      - deploy-prod:
+          requires:
+              - push-tagged
           filters: *tag-filters

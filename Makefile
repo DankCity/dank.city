@@ -146,7 +146,8 @@ get-namespaces:
 
 .PHONY: deploy
 deploy:
-	@cat $(DC_CONFIG) | DOCKER_TAG=$(DOCKER_TAG) envsubst | \
+	@cat $(DC_CONFIG) | \
+		DOCKER_TAG=$(DOCKER_TAG) DEPLOY_REPO=$(DEPLOY_REPO) envsubst | \
 		kubectl \
 			--kubeconfig $(KUBECONFIG) \
 			-n dank-city-$(NAMESPACE) \
@@ -154,12 +155,34 @@ deploy:
 
 .PHONY: deploy-dev
 deploy-dev:
-	$(MAKE) --no-print-directory NAMESPACE=dev deploy
+	$(MAKE) --no-print-directory NAMESPACE=dev DEPLOY_REPO=$(DOCKER_REPO_CI) deploy
 
 .PHONY: deploy-staging
 deploy-staging:
-	$(MAKE) --no-print-directory NAMESPACE=staging deploy
+	$(MAKE) --no-print-directory NAMESPACE=staging DEPLOY_REPO=$(DOCKER_REPO_CI) deploy
 
 .PHONY: deploy-prod
 deploy-prod:
-	$(MAKE) --no-print-directory NAMESPACE=prod deploy
+	$(MAKE) --no-print-directory NAMESPACE=prod DEPLOY_REPO=$(DOCKER_REPO) deploy
+
+# ################################
+#
+# Deploy Dependencies
+#
+# ################################
+.PHONY: install-deploy-deps
+install-deploy-deps: install-kubectl install-envsubst
+
+.PHONY: install-kubectl
+install-kubectl:
+	stable=$$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt); \
+	echo "Stable is: $$stable"; \
+	curl -LO https://storage.googleapis.com/kubernetes-release/release/$$stable/bin/linux/amd64/kubectl;
+	sudo mv kubectl /usr/local/bin/
+	sudo chmod +x /usr/local/bin/kubectl
+	kubectl version --client=true
+
+.PHONY: install-envsubst
+install-envsubst:
+	sudo apt install gettext
+	envsubst --version

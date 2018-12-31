@@ -32,4 +32,4 @@ spec:
     spec:
       containers:
         - name: dank-city
-          image: dankcity/dank.city:${DOCKER_TAG}
+          image: ${DEPLOY_REPO}:${DOCKER_TAG}
