@@ -16,6 +16,8 @@ else
 DOCKER_TAG ?= $(GIT_HASH)
 endif
 
+.DEFAULT_GOAL := help
+
 # ################################
 #
 # Build/Dev/Test Targets
@@ -167,24 +169,6 @@ deploy-staging:
 deploy-prod:
 	$(MAKE) --no-print-directory NAMESPACE=prod DEPLOY_REPO=$(DOCKER_REPO) deploy
 
-# ################################
-#
-# Deploy Dependencies
-#
-# ################################
-.PHONY: install-deploy-deps
-install-deploy-deps: install-kubectl install-envsubst
-
-.PHONY: install-kubectl
-install-kubectl:
-	stable=$$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt); \
-	echo "Stable is: $$stable"; \
-	curl -LO https://storage.googleapis.com/kubernetes-release/release/$$stable/bin/linux/amd64/kubectl;
-	sudo mv kubectl /usr/local/bin/
-	sudo chmod +x /usr/local/bin/kubectl
-	kubectl version --client=true
-
-.PHONY: install-envsubst
-install-envsubst:
-	sudo apt install gettext
-	envsubst --version
+.PHONY: help
+help:
+	@echo "Run 'make build' to build the dank.city image"
