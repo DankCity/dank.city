@@ -110,8 +110,9 @@ pull-ci:
 # ################################
 .PHONY: $(KUBECONFIG)
 $(KUBECONFIG):
+	$(info Decrypting $@)
 ifneq ("$(KUBECONFIG_PASSPHRASE)","")
-	gpg \
+	@gpg \
 		--pinentry-mode=loopback \
 		--passphrase $(KUBECONFIG_PASSPHRASE) \
 		--output $@ \
@@ -122,8 +123,9 @@ endif
 
 .PHONY: $(KUBECONFIG).gpg
 $(KUBECONFIG).gpg:
+	$(info Encrypting $@)
 ifneq ("$(KUBECONFIG_PASSPHRASE)","")
-	gpg \
+	@gpg \
 		--pinentry-mode=loopback \
 		--passphrase $(KUBECONFIG_PASSPHRASE) \
 		--output $@ \
