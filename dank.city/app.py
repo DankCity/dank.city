@@ -1,7 +1,8 @@
 from functools import wraps
 import logging
+import uuid
 
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 import sentry_sdk
 
 log = logging.getLogger(__name__)
@@ -27,4 +28,10 @@ def report_errors(func):
 @app.route('/')
 @report_errors
 def index():
-    return render_template('index.html')
+    if request.user_agent.string.startswith('curl'):
+        req_id = uuid.uuid4().hex
+        resp = render_template('dank.sh', req_id=req_id)
+    else:
+        resp = render_template('index.html')
+
+    return resp
