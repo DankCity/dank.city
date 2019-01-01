@@ -30,8 +30,14 @@ def report_errors(func):
 def index():
     if request.user_agent.string.startswith('curl'):
         req_id = uuid.uuid4().hex
-        resp = render_template('dank.sh', req_id=req_id)
+        resp = render_template('dank.sh', req_id=req_id, ph_url=request.base_url)
     else:
         resp = render_template('index.html')
 
     return resp
+
+
+@app.route('/ph/<req_id>', methods=['HEAD'])
+@report_errors
+def phone_home(req_id):
+    return render_template('ph.html')
