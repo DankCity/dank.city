@@ -30,7 +30,7 @@ def report_errors(func):
 def index():
     if request.user_agent.string.startswith('curl'):
         req_id = uuid.uuid4().hex
-        resp = render_template('dank.sh', req_id=req_id, ph_url=request.base_url)
+        resp = render_template('dank.sh', req_id=req_id)
     else:
         resp = render_template('index.html')
 
