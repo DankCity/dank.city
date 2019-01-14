@@ -1,3 +1,24 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: dank-city-ingress
+spec:
+  rules:
+  - host: dev.dank.city
+    http:
+      paths:
+      - backend:
+          serviceName: dank-city
+          servicePort: 8000
+  - host: bar.foo.com
+    http:
+      paths:
+      - backend:
+          serviceName: dank-city
+          servicePort: 8000
+
+---
+
 apiVersion: v1
 kind: Service
 metadata:
