@@ -1,3 +1,2 @@
-# DankCity
-
-Github repo for the http://dank.city website
+# dank.dev
+Landing page for dank.dev domains

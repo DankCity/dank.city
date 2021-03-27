@@ -1,4 +1,0 @@
-flask
-gevent
-gunicorn
-sentry-sdk

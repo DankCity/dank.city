@@ -1,17 +1,6 @@
-FROM python:alpine
+FROM nginx:alpine
 
-WORKDIR /app
+COPY config/nginx.conf /etc/nginx/conf.d/default.conf
 
-ENV FLASK_APP app.py
-
-COPY requirements.txt .
-RUN apk add --no-cache --virtual .build-deps gcc musl-dev && \
-    pip install --no-cache-dir --upgrade pip setuptools && \
-    pip install --no-cache-dir --upgrade -r requirements.txt && \
-    apk del .build-deps gcc musl-dev
-
-COPY dank.city .
-
-EXPOSE 8000
-
-CMD ["ash", "runserver.sh"]
+WORKDIR /usr/share/nginx/html
+COPY site .
