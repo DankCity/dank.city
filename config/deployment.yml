@@ -1,26 +1,33 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: dank-city-svc
+spec:
+  ports:
+    - port: 80
+      targetPort: 5000
+  selector:
+    app: dank-city
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: dank-dev
+  name: dank-city
   labels:
-    app: dank-dev
+    app: dank-city
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: dank-dev
-  strategy:
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 1
+      app: dank-city
   minReadySeconds: 5
   template:
     metadata:
       labels:
-        app: dank-dev
+        app: dank-city
     spec:
       containers:
-      - name: dank-dev
+      - name: dank-city
         image: <IMAGE>
         ports:
         - containerPort: 5000
@@ -30,41 +37,25 @@ spec:
           limits:
             cpu: 100m
 ---
-apiVersion: v1
-kind: Service
-metadata:
-  name: dank-dev-svc
-  annotations:
-    service.beta.kubernetes.io/do-loadbalancer-name: "<LB_NAME>"
-    service.beta.kubernetes.io/do-loadbalancer-protocol: "https"
-    service.beta.kubernetes.io/do-loadbalancer-certificate-id: "<LB_CERT_ID>"
-    service.beta.kubernetes.io/do-loadbalancer-redirect-http-to-https: "true"
-    service.beta.kubernetes.io/do-loadbalancer-hostname: "dank.dev"
-spec:
-  type: LoadBalancer
-  ports:
-    - name: http
-      protocol: TCP
-      port: 80
-      targetPort: 5000
-  selector:
-    app: dank-dev
----
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: dank-dev-ingress
+  name: dank-city-ingress
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    cert-manager.io/cluster-issuer: "letsencrypt-staging"
 spec:
+  tls:
+  - hosts:
+    - dank.city
+    secretName: dank-city-tls
   rules:
-    - host: dank.dev
+    - host: dank.city
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: dank-dev-svc
+                name: dank-city-svc
                 port:
                   number: 5000

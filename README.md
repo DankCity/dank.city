@@ -1,2 +1,2 @@
-# dank.dev
-Landing page for dank.dev domains
+# dank.city
+Landing page for dank.city domains
